@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/gh05tcrew-metasploitmcp-badge.png)](https://mseep.ai/app/gh05tcrew-metasploitmcp)
+
 # Metasploit MCP Server
 
 A Model Context Protocol (MCP) server for Metasploit Framework integration.
