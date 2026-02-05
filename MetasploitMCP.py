@@ -24,19 +24,27 @@ from starlette.routing import Mount, Route, Router
 
 # --- Configuration & Constants ---
 
-logging.basicConfig(
-    level=os.environ.get("LOG_LEVEL", "INFO").upper(),
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger("metasploit_mcp_server")
-session_shell_type: Dict[str, str] = {}
-
 # Metasploit Connection Config (from environment variables)
 MSF_PASSWORD = os.getenv('MSF_PASSWORD', 'yourpassword')
 MSF_SERVER = os.getenv('MSF_SERVER', '127.0.0.1')
 MSF_PORT_STR = os.getenv('MSF_PORT', '55553')
 MSF_SSL_STR = os.getenv('MSF_SSL', 'false')
-PAYLOAD_SAVE_DIR = os.environ.get('PAYLOAD_SAVE_DIR', str(pathlib.Path.home() / "payloads"))
+PAYLOAD_SAVE_DIR = os.getenv('PAYLOAD_SAVE_DIR', str(pathlib.Path.home() / "payloads"))
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'info')
+
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+)
+logger = logging.getLogger("metasploit_mcp_server")
+logger.setLevel(LOG_LEVEL.upper())
+logger.debug(f"MSF_PASSWORD    : {MSF_PASSWORD}")
+logger.debug(f"MSF_SERVER      : {MSF_SERVER}")
+logger.debug(f"MSF_PORT_STR    : {MSF_PORT_STR}")
+logger.debug(f"MSF_SSL_STR     : {MSF_SSL_STR}")
+logger.debug(f"PAYLOAD_SAVE_DIR: {PAYLOAD_SAVE_DIR}")
+logger.debug(f"LOG_LEVEL       : {LOG_LEVEL}")
+
+session_shell_type: Dict[str, str] = {}
 
 # Timeouts and Polling Intervals (in seconds)
 DEFAULT_CONSOLE_READ_TIMEOUT = 15  # Default for quick console commands
@@ -1704,13 +1712,6 @@ def find_available_port(start_port, host='127.0.0.1', max_attempts=10):
     return start_port
 
 if __name__ == "__main__":
-    # Initialize MSF Client - Critical for server function
-    try:
-        initialize_msf_client()
-    except (ValueError, ConnectionError, RuntimeError) as e:
-        logger.critical(f"CRITICAL: Failed to initialize Metasploit client on startup: {e}. Server cannot function.")
-        sys.exit(1) # Exit if MSF connection fails at start
-
     # --- Setup argument parser for transport mode and server configuration ---
     import argparse
     
@@ -1725,7 +1726,19 @@ if __name__ == "__main__":
     parser.add_argument('--port', type=int, default=None, help='Port to listen on (default: find available from 8085)')
     parser.add_argument('--reload', action='store_true', help='Enable auto-reload (for development)')
     parser.add_argument('--find-port', action='store_true', help='Force finding an available port starting from --port or 8085')
+    parser.add_argument('--debug', action='store_true', help='Make output more verbose')
     args = parser.parse_args()
+
+    if args.debug:
+        LOG_LEVEL = 'debug'
+        logger.setLevel(LOG_LEVEL.upper())
+
+    # Initialize MSF Client - Critical for server function
+    try:
+        initialize_msf_client()
+    except (ValueError, ConnectionError, RuntimeError) as e:
+        logger.critical(f"CRITICAL: Failed to initialize Metasploit client on startup: {e}. Server cannot function.")
+        sys.exit(1) # Exit if MSF connection fails at start
 
     if args.transport == 'stdio':
         logger.info("Starting MCP server in STDIO transport mode.")
@@ -1756,5 +1769,5 @@ if __name__ == "__main__":
             host=args.host,
             port=selected_port,
             reload=args.reload,
-            log_level="info"
+            log_level=LOG_LEVEL.lower()
         )
