@@ -37,6 +37,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger("metasploit_mcp_server")
 logger.setLevel(LOG_LEVEL.upper())
+logger.debug(f"MSF_PASSWORD    : {MSF_PASSWORD}")
+logger.debug(f"MSF_SERVER      : {MSF_SERVER}")
+logger.debug(f"MSF_PORT_STR    : {MSF_PORT_STR}")
+logger.debug(f"MSF_SSL_STR     : {MSF_SSL_STR}")
+logger.debug(f"PAYLOAD_SAVE_DIR: {PAYLOAD_SAVE_DIR}")
+logger.debug(f"LOG_LEVEL       : {LOG_LEVEL}")
 
 session_shell_type: Dict[str, str] = {}
 
