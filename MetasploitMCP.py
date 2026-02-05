@@ -1704,13 +1704,6 @@ def find_available_port(start_port, host='127.0.0.1', max_attempts=10):
     return start_port
 
 if __name__ == "__main__":
-    # Initialize MSF Client - Critical for server function
-    try:
-        initialize_msf_client()
-    except (ValueError, ConnectionError, RuntimeError) as e:
-        logger.critical(f"CRITICAL: Failed to initialize Metasploit client on startup: {e}. Server cannot function.")
-        sys.exit(1) # Exit if MSF connection fails at start
-
     # --- Setup argument parser for transport mode and server configuration ---
     import argparse
     
@@ -1726,6 +1719,13 @@ if __name__ == "__main__":
     parser.add_argument('--reload', action='store_true', help='Enable auto-reload (for development)')
     parser.add_argument('--find-port', action='store_true', help='Force finding an available port starting from --port or 8085')
     args = parser.parse_args()
+
+    # Initialize MSF Client - Critical for server function
+    try:
+        initialize_msf_client()
+    except (ValueError, ConnectionError, RuntimeError) as e:
+        logger.critical(f"CRITICAL: Failed to initialize Metasploit client on startup: {e}. Server cannot function.")
+        sys.exit(1) # Exit if MSF connection fails at start
 
     if args.transport == 'stdio':
         logger.info("Starting MCP server in STDIO transport mode.")
